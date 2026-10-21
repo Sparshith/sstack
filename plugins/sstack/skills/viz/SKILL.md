@@ -1,6 +1,6 @@
 ---
 name: viz
-description: House style for any chart, dashboard or report page with charts. Use before you write chart code, pick chart colours, or lay out a stat tile, hover or table. Charts explain themselves, the form fits the question, hovers are a key/value grid, pages are static inline SVG built by a Python script. Use together with the dataviz skill; where they conflict, this skill wins.
+description: Use before you write any chart, plot, graph or dashboard code, pick chart colours, or lay out a stat tile, hover or table on a chart page. House style - charts explain themselves, the form fits the question, hovers are a key/value grid, pages are static inline SVG built by a Python script. Wins over dataviz on style.
 ---
 
 # Viz
@@ -78,6 +78,7 @@ Do not reuse one chart type for every question.
 ## 8. Build and check
 
 - A Python script (`build.py`) builds a static HTML page from saved data. Use inline SVG and no chart library. Rebuilding never calls a live API.
+- If the user names a library or format, keep it, and apply the other sections inside it.
 - Before you show a page, render it and look at it:
 
   ```sh
