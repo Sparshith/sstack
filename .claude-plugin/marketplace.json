@@ -1,0 +1,13 @@
+{
+  "name": "sstack",
+  "owner": { "name": "Sparshith" },
+  "description": "Sparshith's personal Claude Code skills.",
+  "plugins": [
+    {
+      "name": "sstack",
+      "source": "./plugins/sstack",
+      "description": "Personal skills: chart house style, and more over time.",
+      "version": "0.1.0"
+    }
+  ]
+}
