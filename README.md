@@ -9,7 +9,7 @@ Personal Claude Code skills, packed as one plugin.
 ## Install
 
 ```sh
-claude plugin marketplace add ~/workspace/personal/sstack
+claude plugin marketplace add Sparshith/sstack
 claude plugin install sstack@sstack
 ```
 
