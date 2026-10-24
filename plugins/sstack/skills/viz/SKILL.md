@@ -1,11 +1,36 @@
 ---
 name: viz
-description: Use before you write any chart, plot, graph or dashboard code, pick chart colours, or lay out a stat tile, hover or table on a chart page. House style - charts explain themselves, the form fits the question, hovers are a key/value grid, pages are static inline SVG built by a Python script. Wins over dataviz on style.
+description: Use before you write any chart, plot, graph or dashboard code, pick chart colours, lay out a stat tile, hover or table on a chart page, or build a page that explains how something works or why it went wrong. House style - pick the page type first (explain or point), charts explain themselves, the form fits the question, hovers are a key/value grid, pages are static HTML built by a Python script. Wins over dataviz on style.
 ---
 
 # Viz
 
 Rules for every chart page. Start a new page from `assets/starter.py`: it holds the CSS, the hover script and the SVG helpers. Copy it and the font into the page folder, then replace the demo chart.
+
+## 0. Pick the page type first
+
+Ask what the reader needs, then build one of two kinds of page. They are built differently.
+
+| | Explain page | Point page |
+|---|---|---|
+| Reader wants to | understand how something works, or why a bug or a wrong number happened | see a result fast: a cost per document, a trend, a comparison |
+| Typical asks | "explain this to me", "why did X happen", "walk me through", debugging a case | "cost per claim per day", "which step costs most", "before vs after" |
+| Shape | numbered steps, top to bottom, that follow one real case | one or a few charts, each answering one question |
+| Start from | `assets/explainer.py` (with `starter.py`) | `assets/starter.py` |
+
+If the user is trying to understand something, build an explain page even if they say "visualise". A point chart assumes the reader already knows the terms; it does not teach them.
+
+**Explain page rules**
+
+- Follow one real case end to end (one invoice, one request, one order), with its real numbers at every step.
+- Each step: a short title, one or two plain sentences on the left, one small picture on the right: the document in miniature, the values read, the check and its limit, the result.
+- Plain words. Name each concept the first time it appears, as an action ("it adds up the lines"), not as a term ("reconciliation").
+- Show the cause, then the result, then why the alternative behaved differently, then the fix. Numbered steps are fine here: the order is the story.
+- One accent per step: the number the step is about. Everything else stays in ink.
+- If a scale must start above zero to make a small gap visible, say so on the picture.
+- No stat tiles, no legends, no hovers needed. Sections 1 to 4 apply to point pages; sections 5 to 8 apply to both.
+
+**Point page rules** are sections 1 to 8 below. No row of stat tiles by default: add tiles only when a headline number is not already visible in a chart; otherwise put the title and context line on the first chart.
 
 ## 1. A chart explains itself
 
