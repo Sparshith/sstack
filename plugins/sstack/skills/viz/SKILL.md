@@ -112,3 +112,4 @@ Do not reuse one chart type for every question.
   ```
 
   Check it for overlapping labels, cut-off text, empty tiles and marks that are too thin to see.
+- Show the page with `assets/show.sh <path>/index.html`, not with `open`. If the user runs Chrome on macOS, it reloads the tab that already has the page and closes duplicates, so the user never reloads by hand and never collects copies. Otherwise it falls back to a plain open in the default browser.

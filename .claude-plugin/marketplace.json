@@ -7,7 +7,7 @@
       "name": "sstack",
       "source": "./plugins/sstack",
       "description": "Personal skills: chart house style, and more over time.",
-      "version": "0.2.0"
+      "version": "0.2.1"
     }
   ]
 }
