@@ -42,16 +42,27 @@ If the user is trying to understand something, build an explain page even if the
 
 ## 2. Choose the form for the question
 
+Bars are not the default. Before you write chart code:
+
+1. Write down what the reader must see: a trend, a shift in mix, single days to compare, a ranking, or a part of a whole.
+2. Name two or three forms that could show it, and what each one makes easy or hard to see.
+3. Pick one. Tell the user the form and the reason in one line.
+
 Do not reuse one chart type for every question.
 
-| Question | Form |
+| The reader must see | Form |
 |---|---|
-| Change over days | Vertical bars, one bar or a stack per day |
-| Compare two series per day | Paired bars, same axis |
+| A trend over many days (more than about 30) | Smooth stacked area of a 7-day average, bands labelled in place (`stacked_area()` in the starter) |
+| How a mix shifts over time | 100% stacked area or stream, bands labelled in place |
+| Single days to compare (up to about 30) | Vertical bars, one bar or a stack per day (`daily_bars()`) |
+| Two series per day | Paired bars or two lines, same axis |
 | One level of part-to-whole | One stacked bar, or sorted horizontal bars |
 | Two levels of part-to-whole (group → item) | Treemap: a region per parent, tiles inside |
 | A single headline number | A stat tile, not a chart |
 
+- More than about 30 thin bars look like a barcode, and the trend is lost in the noise. Use an area of a rolling average.
+- A rolling average hides spikes. Put each day's real value in the hover and the table, and say "7-day average" in the title.
+- Label each band in place where it fits. If a band is too thin, label it at its right end. Then leave out the legend.
 - Use one y-axis only. Two measures with different scales get two charts.
 - Mark events (deploys, releases) with a thin dashed vertical line and a short label.
 - Mark missing data with a light grey band and one "no data" label. Never draw a gap as a zero bar.

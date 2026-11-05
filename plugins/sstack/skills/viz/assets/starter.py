@@ -115,6 +115,53 @@ def daily_bars(days, series, values, events=(), missing=()):
     return f'<svg viewBox="0 0 960 370" role="img">{"".join(out)}</svg>'
 
 
+def curve(points):
+    d = f'M{points[0][0]:.1f} {points[0][1]:.1f}'
+    for (x0, y0), (x1, y1) in zip(points, points[1:]):
+        xm = (x0 + x1) / 2
+        d += f'C{xm:.1f} {y0:.1f} {xm:.1f} {y1:.1f} {x1:.1f} {y1:.1f}'
+    return d
+
+
+def band(xs, inner, outer):
+    return curve(list(zip(xs, outer))) + 'L' + curve(list(zip(xs, inner))[::-1])[1:] + 'Z'
+
+
+def stacked_area(days, series, values, window=7, fmt=money):
+    get = lambda d, k: values.get(d, {}).get(k, 0)
+    avg = {d: {k: sum(get(d - timedelta(n), k) for n in range(window)) / window for k, _, _ in series} for d in days}
+    top = nice_top(max(sum(a.values()) for a in avg.values()))
+    scale, step = (Y1 - Y0) / top, (X1 - X0) / (len(days) - 1)
+    xs = [X0 + step * i for i in range(len(days))]
+    out, base = [y_axis(top, lambda v: f'{fmt(v)}/day')], [Y1] * len(days)
+    for k, label, c in series:
+        outer = [b - avg[d][k] * scale for b, d in zip(base, days)]
+        out.append(f'<path d="{band(xs, base, outer)}" fill="{c}"/>')
+        total = fmt(sum(get(d, k) for d in days))
+        for lines in ([f'{label} · {total}'], [label, total]):
+            half = max(map(len, lines)) * 7.3 / 2 + 8
+            under = lambda x: [j for j, xj in enumerate(xs) if abs(xj - x) <= half]
+            room, x = max((min(base[j] for j in under(x)) - max(outer[j] for j in under(x)), x) for x in {min(max(x, X0 + half), X1 - half) for x in xs})
+            if room >= 6 + 15 * len(lines):
+                y = (min(base[j] for j in under(x)) + max(outer[j] for j in under(x))) / 2 + 4 - 7.5 * (len(lines) - 1)
+                out += [f'<text class="band" x="{x:.1f}" y="{y + 15 * n:.1f}" text-anchor="middle">{escape(t)}</text>' for n, t in enumerate(lines)]
+                break
+        else:
+            if base[-1] - outer[-1] >= 12:
+                out.append(f'<text class="axis label" x="{X1 + 8}" y="{(base[-1] + outer[-1]) / 2 + 4:.1f}">{escape(label)} · {total}</text>')
+        base = outer
+    for d, x, b in zip(days, xs, base):
+        if d.weekday() == 0:
+            out.append(f'<text class="axis" x="{x:.1f}" y="352" text-anchor="middle">{d:%b %d}</text>')
+        rows = [[label, f'{fmt(avg[d][k])}/day'] for k, label, _ in series if avg[d][k]]
+        rows.append(['That day', fmt(sum(get(d, k) for k, _, _ in series))])
+        out.append(f'<g class="day" {tip(f"{window} days to {d:%a %b %d}", rows)}>'
+                   f'<rect x="{x - step / 2:.1f}" y="{Y0}" width="{step:.1f}" height="{Y1 - Y0}" fill="transparent"/>'
+                   f'<line x1="{x:.1f}" x2="{x:.1f}" y1="{b:.1f}" y2="{Y1}"/></g>')
+    out.append(f'<line class="domain" x1="{X0}" x2="{X1}" y1="{Y1}" y2="{Y1}"/>')
+    return f'<svg viewBox="0 0 1060 370" role="img">{"".join(out)}</svg>'
+
+
 def treemap(groups, w=960, h=380):
     """groups: [(name, colour, [(item, value), ...]), ...]"""
     total = sum(v for _, _, items in groups for _, v in items)
@@ -169,6 +216,9 @@ svg { display: block; width: 100%; height: auto; overflow: visible; margin-top: 
 .axis { fill: #57606A; font-size: 11px; }
 .axis.label { fill: #0D1117; }
 .muted { fill: #8C959F; font-size: 10px; }
+.band { fill: #FFFFFF; font-size: 12px; pointer-events: none; }
+g.day line { stroke: #0D1117; stroke-width: 1; opacity: 0; }
+g.day:hover line { opacity: .5; }
 .note { margin: 12px 0 0; font-size: 11px; color: #57606A; }
 .tile-head { fill: #0D1117; font-size: 12px; letter-spacing: .4px; pointer-events: none; }
 .tile-name { fill: #0D1117; font-size: 12px; pointer-events: none; }
@@ -238,6 +288,8 @@ def demo():
     series = [('Prod', 'Prod', SLOTS[0]), ('Staging', 'Staging', SLOTS[1]), ('Batch jobs', 'Batch jobs', SLOTS[2])]
     values = {d: {k: rng.uniform(lo, hi) for (k, _, _), (lo, hi) in zip(series, [(40, 90), (5, 25), (0, 30)])} for d in days}
     missing = days[17:19]
+    long = [first + timedelta(n) for n in range(90)]
+    trend = {d: {'Prod': rng.uniform(30, 60) + n * .6, 'Staging': rng.uniform(5, 20), 'Batch jobs': rng.uniform(0, 40) if n > 45 else 0} for n, d in enumerate(long)}
     groups = [('extract', SLOTS[0], [('read_header', 410), ('read_line_items', 980), ('normalise_units', 120), ('ocr_fallback', 60)]),
               ('match', SLOTS[1], [('vendor_lookup_and_match', 520), ('price_check', 230), ('dedupe', 45)]),
               ('review', SLOTS[2], [('flag_for_human', 180), ('summarise', 90)])]
@@ -250,6 +302,8 @@ def demo():
         '<div class="tiles">' + ''.join(f'<div class="tile"><div class="big">{v}</div><div class="small">{escape(k)}</div></div>' for v, k in tiles) + '</div>',
         f'<header><h2>Spend by group and step</h2><span class="period">{window}</span></header>{treemap(groups)}'
         + table(['Group', 'Step', 'Spend'], [(g, i, money(v)) for g, _, items in groups for i, v in items]),
+        f'<header><h2>Spend per day by environment, 7-day average</h2><span class="period">{long[0]:%b %d} – {long[-1]:%b %d} · UTC</span></header>'
+        + stacked_area(long, series, trend),
         f'<header><h2>Daily spend by environment</h2><span class="period">US dollars</span></header>'
         '<div class="legend">' + ''.join(f'<span><i class="swatch" style="--color:{c}"></i>{escape(l)}</span>' for _, l, c in series) + '</div>'
         + daily_bars(days, series, values, events=[(days[9], 'v2 deploy')], missing=missing)
